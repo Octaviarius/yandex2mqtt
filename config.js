@@ -1,5 +1,8 @@
 module.exports = {
 
+    skill_id: '207cf6eb-7db7-49a5-9808-3cd4223777f4',
+    oauth_token: 'y0__xCGvd2OARij9xMg4433yBJF_UPZHieC-xExXLlbVlxAKinIhQ',
+
     mqtt: {
         host: 'localhost',
         port: 1883,
@@ -8,61 +11,55 @@ module.exports = {
     },
 
     https: {
-        privateKey: '/mnt/data/root/node-key2.pem',
-        certificate: '/mnt/data/root/munrexio.crt',
+        privateKey: '/etc/letsencrypt/live/octa-smarthome.zapto.org/privkey.pem',
+        certificate: '/etc/letsencrypt/live/octa-smarthome.zapto.org/fullchain.pem',
         port: 443
     },
 
     clients: [
-    {
-        id: '1',
-        name: 'Yandex',
-        clientId: 'yandex-smarthome12345',
-        clientSecret: 'secret12345',
-        isTrusted: false
+        {
+            id: '1',
+            name: 'Yandex',
+            clientId: 'yandex-wirenboard-1869',
+            clientSecret: 'Octaviarius0',
+            isTrusted: false
         },
     ],
 
     users: [{
-            id: '1',
-            username: 'admin',
-            password: 'admin',
-            name: 'Administrator'
-        },
-        {
-            id: '2',
-            username: 'root',
-            password: 'root',
-            name: 'Administrator'
-        },
+        id: '1',
+        username: 'admin',
+        password: 'admin',
+        name: 'Administrator'
+    },
+    {
+        id: '2',
+        username: 'root',
+        password: 'root',
+        name: 'Administrator'
+    },
     ],
 
     devices: [
-    //_______________Первое устройство______________//
         {
-            name: 'Свет',
-            room: 'Комната',
+            name: 'Свет в спальне',
+            room: 'Спальня',
             type: 'devices.types.light',
             mqtt: [
-                 {
-                    type: 'on',
-                    set: '/devices/yandex/controls/light1/on',
-                    stat: '/devices/yandex/controls/light1'
+                {
+                    instance: 'on',
+                    in: '/devices/yandex-br/bedroom-main-light/enabled/in',
+                    out: '/devices/yandex-br/bedroom-main-light/enabled/out'
                 },
                 {
-                    type: 'rgb',
-                    set: '/devices/yandex/controls/light3/on',
-                    stat: '/devices/yandex/controls/light3'
+                    instance: 'temperature_k',
+                    in: '/devices/yandex-br/bedroom-main-light/temperature_k/in',
+                    out: '/devices/yandex-br/bedroom-main-light/temperature_k/out'
                 },
                 {
-                    type: 'temperature_k',
-                    set: '/devices/yandex/controls/light4/on',
-                    stat: '/devices/yandex/controls/light4'
-                },
-                {
-                    type: 'brightness',
-                    set: '/devices/yandex/controls/light5/on',
-                    stat: '/devices/yandex/controls/light5'
+                    instance: 'brightness',
+                    in: '/devices/yandex-br/bedroom-main-light/brightness/in',
+                    out: '/devices/yandex-br/bedroom-main-light/brightness/out'
                 },
             ],
             capabilities: [
@@ -96,264 +93,82 @@ module.exports = {
                     type: 'devices.capabilities.color_setting',
                     retrievable: true,
                     parameters: {
-                        color_model: 'rgb',
                         temperature_k: {
-                            min: 2000,
+                            min: 2500,
                             max: 8500,
                             precision: 500,
                         }
                     },
                     state: {
-                        instance: 'rgb',
-                        value: 0
+                        instance: 'temperature_k',
+                        value: 4000
                     },
                 },
             ]
         },
-    //__________Конец первого устройства__________//
-    
-
-
-    // ________ Второе устройство___________//
         {
-            name: 'Телевизор',
-            room: 'Комната',
-            type: 'devices.types.media_device.tv',
+            name: 'Атмосфера в спальне',
+            room: 'Спальня',
+            type: 'devices.types.sensor',
             mqtt: [
-                 {
-                    type: 'on',
-                    set: '/devices/yandex/controls/light6/on',
-                    stat: '/devices/yandex/controls/light6'
+                {
+                    instance: 'co2_level',
+                    out: '/devices/yandex-br/bedroom-atmosphere/co2_level/out'
                 },
                 {
-                    type: 'mute',
-                    set: '/devices/yandex/controls/light2/on',
-                    stat: '/devices/yandex/controls/light2'
+                    instance: 'tvoc',
+                    out: '/devices/yandex-br/bedroom-atmosphere/voc/out'
                 },
                 {
-                    type: 'volume',
-                    set: '/devices/yandex/controls/light7/on',
-                    stat: '/devices/yandex/controls/light7'
+                    instance: 'humidity',
+                    out: '/devices/yandex-br/bedroom-atmosphere/hum/out'
                 },
                 {
-                    type: 'channel',
-                    set: '/devices/yandex/controls/light8/on',
-                    stat: '/devices/yandex/controls/light8'
+                    instance: 'temperature',
+                    out: '/devices/yandex-br/bedroom-atmosphere/temp/out'
                 },
+                {
+                    instance: 'illumination',
+                    out: '/devices/yandex-br/bedroom-atmosphere/illumination/out'
+                }
             ],
-            capabilities: [
+            properties: [
                 {
-                    type: 'devices.capabilities.on_off',
-                    retrievable: true,
-                    state: {
-                        instance: 'on',
-                        value: true
+                    type: "devices.properties.float",
+                    parameters: {
+                        instance: "co2_level",
+                        unit: "unit.ppm"
                     }
                 },
                 {
-                    type: 'devices.capabilities.toggle',
-                    retrievable: true,
+                    type: "devices.properties.float",
                     parameters: {
-                        instance: 'mute'
-                    },
-                    state: {
-                        instance: 'mute',
-                        value: true
-                    },
-                },
-
-                {
-                    type: 'devices.capabilities.range',
-                    retrievable: true,
-
-                    parameters: {
-                        instance: 'channel',
-                    },
-                    state: {
-                        instance: 'channel',
-                        value: 1,
-                    },
-                },
-                {
-                    type: 'devices.capabilities.range',
-                    retrievable: true,
-
-                    parameters: {
-                        instance: 'volume',
-                        range: {
-                            min: 0,
-                            max: 100,
-                            precision: 1
-                        }
-                    },
-                    state: {
-                        instance: 'volume',
-                        value: 10,
-                    },
-                },
-            ]
-        },
-    //_________конец второго устройства_________//
-
-
-    //______Третье устройство____//
-
-        {
-            name: 'Кондиционер',
-            room: 'Комната',
-            type: 'devices.types.thermostat.ac',
-            mqtt: [
-                 {
-                    type: 'on',
-                    set: '/devices/yandex/controls/light9/on',
-                    stat: '/devices/yandex/controls/light9'
-                },
-                {
-                    type: 'temperature',
-                    set: '/devices/yandex/controls/light10/on',
-                    stat: '/devices/yandex/controls/light10'
-                },
-                {
-                    type: 'thermostat',
-                    set: '/devices/yandex/controls/light11/on',
-                    stat: '/devices/yandex/controls/light11'
-                },
-                {
-                    type: 'fan_speed',
-                    set: '/devices/yandex/controls/light12/on',
-                    stat: '/devices/yandex/controls/light12'
-                },
-            ],
-            capabilities: [
-                {
-                    type: 'devices.capabilities.on_off',
-                    retrievable: true,
-                    state: {
-                        instance: 'on',
-                        value: true
+                        instance: "tvoc",
+                        unit: "unit.ppb"
                     }
                 },
                 {
-                    type: 'devices.capabilities.range',
-                    retrievable: true,
-
+                    type: "devices.properties.float",
                     parameters: {
-                        instance: 'temperature',
-                        unit: 'unit.temperature.celsius',
-                        range: {
-                            min: 16,
-                            max: 40,
-                            precision: 1
-                        }
-                    },
-                    state: {
-                        instance: 'temperature',
-                        value: 25,
-                    },
-                },
-                {
-                    type: 'devices.capabilities.mode',
-                    retrievable: true,
-                    parameters: {
-                        instance: 'thermostat',
-                        modes:  [
-                            {
-                                value: 'heat'
-                            },
-                            {
-                                value: 'cool'
-                            },
-                            {
-                                value: 'auto'
-                            },
-                            {
-                                value: 'eco'
-                            },
-                            {
-                                value: 'dry'
-                            },
-                            {
-                                value: 'fan_only'
-                            },
-                        ],
-                    },
-                    state: {
-                        instance: 'thermostat',
-                        value: 'fan_only',
-                    },
-                },
-                {
-                    type: 'devices.capabilities.mode',
-                    retrievable: true,
-                    parameters: {
-                        instance: 'fan_speed',
-                        modes:  [
-                            {
-                                value: 'auto'
-                            },
-                            {
-                                value: 'low'
-                            },
-                            {
-                                value: 'medium'
-                            },
-                            {
-                                value: 'high'
-                            },
-                        ],
-                        ordered: true,
-                    },
-                    state: {
-                        instance: 'fan_speed',
-                        value: 'auto',
-                    },
-                },
-            ]
-        },
-    //____конец третьего устройства___//
-
-    //_______________Устройство с HSV______________//
-        {
-            name: 'Лампочка',
-            room: 'Комната',
-            type: 'devices.types.light',
-            mqtt: [
-                 {
-                    type: 'on',
-                    set: '/devices/yandex/controls/light13/on',
-                    stat: '/devices/yandex/controls/light13'
-                },
-                {
-                    type: 'hsv',
-                    set: '/devices/yandex/controls/light14/on',
-                    stat: '/devices/yandex/controls/light14'
-                },
-
-            ],
-            capabilities: [
-                {
-                    type: 'devices.capabilities.on_off',
-                    retrievable: true,
-                    state: {
-                        instance: 'on',
-                        value: true
+                        instance: "humidity",
+                        unit: "unit.percent"
                     }
                 },
                 {
-                    type: 'devices.capabilities.color_setting',
-                    retrievable: true,
+                    type: "devices.properties.float",
                     parameters: {
-                        color_model: 'hsv',
-                    },
-                    state: {
-                        instance: 'hsv',
-                        value: {h: 0, s: 0, v: 0}
-                    },
+                        instance: "temperature",
+                        unit: "unit.temperature.celsius"
+                    }
                 },
+                {
+                    type: "devices.properties.float",
+                    parameters: {
+                        instance: "illumination",
+                        unit: "unit.illumination.lux"
+                    }
+                }
             ]
-        },
-    //__________Конец устройства__________//
-
-
+        }
     ]
 }

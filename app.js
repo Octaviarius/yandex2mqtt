@@ -76,8 +76,7 @@ app.post('/provider/v1.0/user/devices/action', routes.user.action);
 app.post('/provider/v1.0/user/unlink', routes.user.unlink);
 httpsServer.listen(config.https.port);
 
-
-function findDevIndex(arr, elem) {
+function findIndexByType(arr, elem) {
     for (var i = 0; i < arr.length; i++) {
         if (arr[i].type === elem) {
             return i;
@@ -86,136 +85,51 @@ function findDevIndex(arr, elem) {
     return false;
 }
 
-
-const statPairs = [];
+const mqttOut = {};
 
 global.devices.forEach(device => {
     device.client = client;
-    device.data.custom_data.mqtt.forEach(mqtt => {
-        const statType = mqtt.type || false;
-        const statTopic = mqtt.stat || false;
-        if (statTopic && statType) {
-            statPairs.push({
-                deviceId: device.data.id,
-                topic: statTopic,
-                topicType: statType
-            });
+
+    var mqttData;
+
+    device.data.capabilities.forEach(cap => {
+        mqttData = device.data.custom_data.mqtt.find(it => it.instance == cap.state.instance);
+        if (mqttData && mqttData.out) {
+            mqttOut[mqttData.out] = {
+                device: device,
+                capability: cap,
+                mqtt: mqttData
+            };
         }
-    });
+    })
+
+    device.data.properties.forEach(prop => {
+        mqttData = device.data.custom_data.mqtt.find(it => it.instance == prop.parameters.instance);
+        if (mqttData && mqttData.out) {
+            mqttOut[mqttData.out] = {
+                device: device,
+                property: prop,
+                mqtt: mqttData
+            };
+        }
+    })
 });
 
-if (statPairs) {
+if (mqttOut) {
     client.on('connect', () => {
-        client.subscribe(statPairs.map(pair => pair.topic));
-        client.on('message', (topic, message) => {
-            const matchedDeviceId = statPairs.findIndex(pair => topic.toLowerCase() === pair.topic.toLowerCase());
-            if (matchedDeviceId == -1) return;
+        client.subscribe(Object.entries(mqttOut).map(([key, val]) => key));
 
-            const device = global.devices.find(device => device.data.id == statPairs[matchedDeviceId].deviceId);
-            var devindx;
-            switch (statPairs[matchedDeviceId].topicType) {
-                case 'on':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.on_off')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = ['on', '1', 'true'].includes(message.toString().toLowerCase());
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'mute':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.toggle')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = ['on', '1', 'true'].includes(message.toString().toLowerCase());
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'hsv':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.color_setting')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'rgb':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.color_setting')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'temperature_k':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.color_setting')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;        
-                case 'thermostat':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.mode')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'fan_speed':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.mode')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;    
-                case 'brightness':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.range')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'temperature':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.range')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'volume':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.range')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;
-                case 'channel':
-                    try {
-                        devindx = findDevIndex(device.data.capabilities, 'devices.capabilities.range')
-                        device.data.capabilities[devindx].state.instance = statPairs[matchedDeviceId].topicType;
-                        device.data.capabilities[devindx].state.value = JSON.parse(message);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                    break;                        
-                default:
-                    console.log('Unknown topic Type: ' + statPairs[matchedDeviceId].topicType);
-            };
+        client.on('message', (topic, message) => {
+            var mqttInst = mqttOut[topic];
+
+            if (mqttInst.capability) {
+                mqttInst.capability.state.value = JSON.parse(message);
+            } else if (mqttInst.property) {
+                mqttInst.property.state = {
+                    value: JSON.parse(message),
+                    instance: mqttInst.property.parameters.instance
+                };
+            }
         });
     });
 
